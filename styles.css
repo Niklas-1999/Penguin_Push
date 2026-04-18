@@ -12,6 +12,7 @@ body {
 
 body {
   touch-action: none;
+  overscroll-behavior: none;
   background: linear-gradient(
     to bottom,
     #aef7f2 0%,
@@ -21,9 +22,62 @@ body {
 }
 
 #gameCanvas {
+  position: fixed;
+  inset: 0;
   display: block;
   width: 100vw;
   height: var(--app-height);
+}
+
+.joystick {
+  position: fixed;
+  left: clamp(18px, 3vw, 32px);
+  bottom: clamp(18px, 3vw, 32px);
+  width: clamp(112px, 16vw, 156px);
+  height: clamp(112px, 16vw, 156px);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  z-index: 5;
+}
+
+.joystick__base,
+.joystick__knob {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.joystick__base {
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.24) 0%,
+    rgba(255, 255, 255, 0.14) 35%,
+    rgba(255, 255, 255, 0.06) 70%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  box-shadow: 0 12px 28px rgba(0, 28, 68, 0.18);
+  backdrop-filter: blur(6px);
+}
+
+.joystick__knob {
+  inset: 50%;
+  width: 36%;
+  height: 36%;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 8px 18px rgba(0, 28, 68, 0.18);
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .joystick {
+    left: 50%;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+  }
 }
 
 @supports not (height: 100dvh) {
