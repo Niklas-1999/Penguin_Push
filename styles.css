@@ -1,0 +1,33 @@
+:root {
+  --app-height: 100dvh;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: var(--app-height);
+  overflow: hidden;
+}
+
+body {
+  touch-action: none;
+  background: linear-gradient(
+    to bottom,
+    #aef7f2 0%,
+    #74d4ea 40%,
+    #3f8fdb 100%
+  );
+}
+
+#gameCanvas {
+  display: block;
+  width: 100vw;
+  height: var(--app-height);
+}
+
+@supports not (height: 100dvh) {
+  :root {
+    --app-height: 100vh;
+  }
+}
