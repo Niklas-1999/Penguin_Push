@@ -45,6 +45,29 @@ function buildFloePolygon(profile, layout) {
   return profile.map((point) => getFloePoint(layout, point));
 }
 
+export function getFloePolygon(profile, layout) {
+  return buildFloePolygon(profile, layout);
+}
+
+export function isPointInsidePolygon(point, polygon) {
+  let isInside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+    const start = polygon[i];
+    const end = polygon[j];
+    const intersects =
+      (start.y > point.y) !== (end.y > point.y) &&
+      point.x <
+        ((end.x - start.x) * (point.y - start.y)) / (end.y - start.y + 0.0000001) + start.x;
+
+    if (intersects) {
+      isInside = !isInside;
+    }
+  }
+
+  return isInside;
+}
+
 function cross2D(a, b) {
   return a.x * b.y - a.y * b.x;
 }

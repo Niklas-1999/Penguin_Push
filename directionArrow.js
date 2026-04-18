@@ -5,12 +5,6 @@ export function drawDirectionArrow(ctx, playerPoint, penguinSize, angle) {
   const arrowSize = Math.max(Math.round(penguinSize * 0.75), 18);
 
   ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
-  ctx.lineWidth = Math.max(2, penguinSize * 0.08);
-  ctx.beginPath();
-  ctx.arc(playerPoint.x, playerPoint.y, orbitRadius, 0, Math.PI * 2);
-  ctx.stroke();
-
   ctx.translate(arrowX, arrowY);
   ctx.rotate(angle);
 

@@ -9,12 +9,14 @@ The current build focuses on a clean, responsive foundation:
 - Four penguins placed on stable cardinal spawn points
 - A draggable joystick for desktop and mobile
 - A direction indicator that shows where the player is aiming
+- A strength slider and Push button for shot-based movement
 
 ## Controls
 
 - Desktop: drag the joystick in the bottom-left corner
 - Mobile: drag the joystick in the bottom-center area
-- The arrow around the player penguin shows the joystick direction
+- The arrow around the player penguin stays on screen after you release the joystick
+- Adjust strength with the slider, then press Push to send the penguin sliding
 
 ## Project Structure
 

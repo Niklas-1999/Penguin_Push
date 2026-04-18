@@ -1,5 +1,10 @@
 :root {
   --app-height: 100dvh;
+  --panel-bg: rgba(8, 34, 63, 0.48);
+  --panel-border: rgba(255, 255, 255, 0.18);
+  --panel-shadow: 0 18px 42px rgba(0, 18, 42, 0.28);
+  --panel-accent: #7ff2e8;
+  --panel-accent-strong: #f5fffe;
 }
 
 html,
@@ -13,6 +18,7 @@ body {
 body {
   touch-action: none;
   overscroll-behavior: none;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   background: linear-gradient(
     to bottom,
     #aef7f2 0%,
@@ -39,6 +45,11 @@ body {
   user-select: none;
   -webkit-user-select: none;
   z-index: 5;
+}
+
+.joystick.is-disabled {
+  opacity: 0.55;
+  filter: saturate(0.75);
 }
 
 .joystick__base,
@@ -72,11 +83,194 @@ body {
   pointer-events: none;
 }
 
+.shot-controls {
+  position: fixed;
+  right: clamp(18px, 3vw, 32px);
+  bottom: clamp(18px, 3vw, 32px);
+  width: min(280px, calc(100vw - 36px));
+  padding: 16px 16px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(10, 44, 76, 0.64), var(--panel-bg));
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(12px);
+  color: var(--panel-accent-strong);
+  z-index: 6;
+}
+
+.shot-controls[data-mode="locked"] {
+  opacity: 0.82;
+}
+
+.shot-controls__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shot-controls__value {
+  color: var(--panel-accent);
+}
+
+.shot-controls__bar {
+  position: relative;
+  height: 18px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.shot-controls__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 55%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #67dff3 0%, #8ef7d8 52%, #f6ffd8 100%);
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.22);
+}
+
+.shot-controls__slider {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.shot-controls__slider::-webkit-slider-runnable-track {
+  height: 18px;
+  background: transparent;
+}
+
+.shot-controls__slider::-moz-range-track {
+  height: 18px;
+  background: transparent;
+}
+
+.shot-controls__slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -2px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: #d8ffff;
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.22);
+}
+
+.shot-controls__slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: #d8ffff;
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.22);
+}
+
+.shot-controls__slider:disabled {
+  cursor: default;
+}
+
+.shot-controls__push {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #9ffdf7 0%, #67e6d9 100%);
+  color: #05304a;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 22px rgba(0, 42, 71, 0.22);
+  cursor: pointer;
+}
+
+.shot-controls__push:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.game-over {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 16, 28, 0.55);
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+
+.game-over[hidden] {
+  display: none;
+}
+
+.game-over__panel {
+  width: min(92vw, 360px);
+  padding: 28px 24px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(12, 46, 78, 0.96), rgba(5, 28, 52, 0.96));
+  box-shadow: 0 28px 70px rgba(0, 8, 18, 0.45);
+  color: #f7fffe;
+  text-align: center;
+}
+
+.game-over__title {
+  margin: 0 0 10px;
+  font-size: clamp(2rem, 5vw, 2.6rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.game-over__text {
+  margin: 0 0 18px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: rgba(247, 255, 254, 0.85);
+}
+
+.game-over__button {
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #9ffdf7 0%, #67e6d9 100%);
+  color: #05304a;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 22px rgba(0, 42, 71, 0.22);
+  cursor: pointer;
+}
+
 @media (pointer: coarse) {
   .joystick {
     left: 50%;
     bottom: max(18px, env(safe-area-inset-bottom));
     transform: translateX(-50%);
+  }
+
+  .shot-controls {
+    top: 18px;
+    bottom: auto;
+    right: 18px;
+    left: 18px;
+    width: auto;
+  }
+
+  .game-over__panel {
+    width: min(90vw, 340px);
   }
 }
 

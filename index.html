@@ -17,6 +17,32 @@
       <div class="joystick__base"></div>
       <div class="joystick__knob"></div>
     </div>
+    <section id="shotControls" class="shot-controls" aria-label="Shot controls">
+      <div class="shot-controls__header">
+        <span>Strength</span>
+        <span id="strengthValue" class="shot-controls__value">55%</span>
+      </div>
+      <div class="shot-controls__bar">
+        <div id="strengthFill" class="shot-controls__fill"></div>
+        <input
+          id="strengthSlider"
+          class="shot-controls__slider"
+          type="range"
+          min="0"
+          max="100"
+          value="55"
+          aria-label="Shot strength"
+        />
+      </div>
+      <button id="pushButton" class="shot-controls__push" type="button">Push</button>
+    </section>
+    <section id="gameOverOverlay" class="game-over" aria-live="polite" hidden>
+      <div class="game-over__panel">
+        <h1 class="game-over__title">Game Over</h1>
+        <p class="game-over__text">The penguin fell off the floe.</p>
+        <button id="tryAgainButton" class="game-over__button" type="button">Try again</button>
+      </div>
+    </section>
     <script type="module" src="main.js"></script>
   </body>
 </html>
