@@ -1,12 +1,14 @@
-export function drawAiPenguin1(ctx, floeLayout, spawnPoint) {
-  const x = spawnPoint.x;
-  const y = spawnPoint.y;
-  const size = Math.round(floeLayout.baseSize * 0.2);
+function getAngleToTarget(fromPosition, toPosition) {
+  return Math.atan2(toPosition.y - fromPosition.y, toPosition.x - fromPosition.x);
+}
 
-  ctx.save();
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-  ctx.fillText("🐧", x, y);
-  ctx.restore();
+export function getAiPenguin1Shot(selfPenguin, playerPenguin, strength) {
+  if (!selfPenguin?.position || !playerPenguin?.position) {
+    return null;
+  }
+
+  return {
+    angle: getAngleToTarget(selfPenguin.position, playerPenguin.position),
+    strength,
+  };
 }

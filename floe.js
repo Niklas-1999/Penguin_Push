@@ -19,9 +19,10 @@ export function createFloeProfile(pointCount = 18) {
   return points;
 }
 
-export function getFloeLayout(width, height) {
+export function getFloeLayout(width, height, scale = 1) {
   const minDimension = Math.min(width, height);
-  const baseSize = Math.max(140, Math.min(minDimension * 0.31, 330));
+  const normalizedScale = Math.max(scale, 0.2);
+  const baseSize = Math.max(140 * normalizedScale, Math.min(minDimension * 0.31, 330) * normalizedScale);
 
   return {
     centerX: width * 0.5,
@@ -138,8 +139,8 @@ export function getCardinalSpawnPoints(profile, layout, inset = 0) {
   return spawns;
 }
 
-export function drawIceFloe(ctx, profile, width, height) {
-  const layout = getFloeLayout(width, height);
+export function drawIceFloe(ctx, profile, width, height, scale = 1) {
+  const layout = getFloeLayout(width, height, scale);
   const polygon = buildFloePolygon(profile, layout);
 
   ctx.beginPath();

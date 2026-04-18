@@ -254,6 +254,61 @@ body {
   cursor: pointer;
 }
 
+.you-win {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(6, 30, 12, 0.52);
+  backdrop-filter: blur(8px);
+  z-index: 21;
+}
+
+.you-win[hidden] {
+  display: none;
+}
+
+.you-win__panel {
+  width: min(92vw, 360px);
+  padding: 28px 24px 24px;
+  border: 1px solid rgba(215, 255, 222, 0.22);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(24, 86, 48, 0.96), rgba(10, 54, 30, 0.96));
+  box-shadow: 0 28px 70px rgba(0, 16, 6, 0.45);
+  color: #f5fff5;
+  text-align: center;
+}
+
+.you-win__title {
+  margin: 0 0 10px;
+  font-size: clamp(2rem, 5vw, 2.6rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.you-win__text {
+  margin: 0 0 18px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: rgba(245, 255, 245, 0.86);
+}
+
+.you-win__button {
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #b5ffd3 0%, #7de3a1 100%);
+  color: #0a4225;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 22px rgba(5, 56, 30, 0.25);
+  cursor: pointer;
+}
+
 @media (pointer: coarse) {
   .joystick {
     left: 50%;
@@ -270,6 +325,10 @@ body {
   }
 
   .game-over__panel {
+    width: min(90vw, 340px);
+  }
+
+  .you-win__panel {
     width: min(90vw, 340px);
   }
 }

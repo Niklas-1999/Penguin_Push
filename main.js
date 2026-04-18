@@ -6,6 +6,9 @@ import {
   getFloePolygon,
   isPointInsidePolygon,
 } from "./floe.js";
+import { getAiPenguin1Shot } from "./aiPenguin1.js";
+import { getAiPenguin2Shot } from "./aiPenguin2.js";
+import { getAiPenguin3Shot } from "./aiPenguin3.js";
 import { createJoystick } from "./joystick.js";
 import { drawDirectionArrow } from "./directionArrow.js";
 
@@ -126,6 +129,13 @@ function createPenguinRoster() {
   ];
 }
 
+function getUnscaledPenguinSize(width, height) {
+  const minDimension = Math.min(width, height);
+  const unscaledBaseSize = Math.max(140, Math.min(minDimension * 0.31, 330));
+
+  return Math.round(unscaledBaseSize * 0.2);
+}
+
 function initGame() {
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
@@ -138,24 +148,36 @@ function initGame() {
   const controlPanel = document.getElementById("shotControls");
   const gameOverOverlay = document.getElementById("gameOverOverlay");
   const tryAgainButton = document.getElementById("tryAgainButton");
+  const youWinOverlay = document.getElementById("youWinOverlay");
+  const playAgainButton = document.getElementById("playAgainButton");
   const initialStrength = Number(strengthSlider.value) / 100;
   const penguins = createPenguinRoster();
   const playerPenguin = penguins[penguins.length - 1];
   let needsResize = true;
   let previousFrameTime = performance.now();
   let gameOver = false;
+  let gameWon = false;
+  let floeScale = 1;
+  let shouldShrinkAfterRound = false;
   let currentFloePolygon = null;
+  let currentFloeLayout = null;
   let currentPenguinSize = 0;
+  const shrinkFactorPerRound = 0.92;
 
   function setGameOverOverlayVisible(visible) {
     gameOverOverlay.hidden = !visible;
   }
 
+  function setYouWinOverlayVisible(visible) {
+    youWinOverlay.hidden = !visible;
+  }
+
   function syncStrengthUi() {
-    const strengthPercent = Math.round(playerPenguin.aimStrength * 100);
+    const strengthPercent = Number(strengthSlider.value);
 
     strengthValue.textContent = `${strengthPercent}%`;
     strengthFill.style.width = `${strengthPercent}%`;
+    playerPenguin.aimStrength = strengthPercent / 100;
   }
 
   function setControlsEnabled(enabled) {
@@ -165,12 +187,18 @@ function initGame() {
   }
 
   function updatePushAvailability() {
-    const controlsEnabled = !gameOver && playerPenguin.status === "active" && !playerPenguin.moving;
+    const roundBusy = penguins.some((penguin) => penguin.status === "falling" || penguin.moving);
+    const controlsEnabled = !gameOver && !gameWon && playerPenguin.status === "active" && !roundBusy;
+
+    if (shouldShrinkAfterRound && !roundBusy && !gameOver && !gameWon) {
+      floeScale *= shrinkFactorPerRound;
+      shouldShrinkAfterRound = false;
+    }
 
     setControlsEnabled(controlsEnabled);
     pushButton.disabled = !controlsEnabled || !joystick.hasSelection();
-    pushButton.textContent = playerPenguin.moving ? "Sliding..." : "Push";
-    pushButton.setAttribute("aria-busy", playerPenguin.moving ? "true" : "false");
+    pushButton.textContent = roundBusy ? "Sliding..." : "Push";
+    pushButton.setAttribute("aria-busy", roundBusy ? "true" : "false");
   }
 
   function applySpawnPoints(spawnPoints) {
@@ -187,12 +215,15 @@ function initGame() {
   function resetGame() {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const floeLayout = drawIceFloe(ctx, floeProfile, width, height);
-    const penguinSize = Math.round(floeLayout.baseSize * 0.2);
+    floeScale = 1;
+    shouldShrinkAfterRound = false;
+    const floeLayout = drawIceFloe(ctx, floeProfile, width, height, floeScale);
+    const penguinSize = getUnscaledPenguinSize(width, height);
     const spawnInset = penguinSize * 1.05;
     const spawnPoints = getCardinalSpawnPoints(floeProfile, floeLayout, spawnInset);
 
     gameOver = false;
+    gameWon = false;
     applySpawnPoints(spawnPoints);
     joystick.clearSelection();
     playerPenguin.aimAngle = -Math.PI / 2;
@@ -200,15 +231,66 @@ function initGame() {
     strengthSlider.value = String(Math.round(initialStrength * 100));
     syncStrengthUi();
     setGameOverOverlayVisible(false);
+    setYouWinOverlayVisible(false);
     updatePushAvailability();
   }
 
   function getShotSpeed(strength) {
-    return 120 + strength * 360;
+    return 120 + strength * 520;
+  }
+
+  function applyShotForPenguin(penguin, angle, strength) {
+    penguin.aimAngle = angle;
+    penguin.aimStrength = strength;
+    penguin.velocityX = Math.cos(angle) * getShotSpeed(strength);
+    penguin.velocityY = Math.sin(angle) * getShotSpeed(strength);
+    penguin.moving = true;
+  }
+
+  function prepareAiShots(strength) {
+    if (!currentFloeLayout || !playerPenguin.position) {
+      return;
+    }
+
+    penguins.forEach((penguin) => {
+      if (penguin.isPlayer || penguin.status !== "active" || !penguin.position) {
+        return;
+      }
+
+      if (penguin.id === "ai1") {
+        const shot = getAiPenguin1Shot(penguin, playerPenguin, strength);
+
+        if (shot) {
+          applyShotForPenguin(penguin, shot.angle, shot.strength);
+        }
+
+        return;
+      }
+
+      if (penguin.id === "ai2") {
+        const shot = getAiPenguin2Shot(penguin, penguins, strength);
+
+        if (shot) {
+          applyShotForPenguin(penguin, shot.angle, shot.strength);
+        }
+
+        return;
+      }
+
+      if (penguin.id === "ai3") {
+        const shot = getAiPenguin3Shot(penguin, currentFloeLayout, strength);
+
+        if (shot) {
+          applyShotForPenguin(penguin, shot.angle, shot.strength);
+        }
+      }
+    });
   }
 
   function startShot() {
-    if (gameOver || playerPenguin.status !== "active" || playerPenguin.moving || !joystick.hasSelection() || !playerPenguin.position) {
+    const roundBusy = penguins.some((penguin) => penguin.status === "falling" || penguin.moving);
+
+    if (gameOver || playerPenguin.status !== "active" || roundBusy || !joystick.hasSelection() || !playerPenguin.position) {
       return;
     }
 
@@ -216,10 +298,9 @@ function initGame() {
     const strength = Number(strengthSlider.value) / 100;
 
     playerPenguin.aimAngle = angle;
-    playerPenguin.aimStrength = strength;
-    playerPenguin.velocityX = Math.cos(angle) * getShotSpeed(strength);
-    playerPenguin.velocityY = Math.sin(angle) * getShotSpeed(strength);
-    playerPenguin.moving = true;
+    applyShotForPenguin(playerPenguin, angle, strength);
+    prepareAiShots(strength);
+    shouldShrinkAfterRound = true;
     updatePushAvailability();
     syncStrengthUi();
   }
@@ -237,6 +318,8 @@ function initGame() {
   }
 
   function settleFallingPenguins(currentTime) {
+    let playerLost = false;
+
     penguins.forEach((penguin) => {
       if (penguin.status !== "falling" || penguin.fallStartedAt === null) {
         return;
@@ -250,10 +333,27 @@ function initGame() {
       penguin.position = null;
 
       if (penguin.isPlayer) {
-        gameOver = true;
-        setGameOverOverlayVisible(true);
+        playerLost = true;
       }
     });
+
+    if (playerLost) {
+      gameOver = true;
+      setGameOverOverlayVisible(true);
+      return;
+    }
+
+    if (gameWon || gameOver) {
+      return;
+    }
+
+    const aiPenguins = penguins.filter((penguin) => !penguin.isPlayer);
+    const allAiGone = aiPenguins.every((penguin) => penguin.status === "gone");
+
+    if (allAiGone) {
+      gameWon = true;
+      setYouWinOverlayVisible(true);
+    }
   }
 
   function updatePenguinPhysics(deltaSeconds, currentTime) {
@@ -261,7 +361,7 @@ function initGame() {
       return;
     }
 
-    const drag = Math.exp(-2.2 * deltaSeconds);
+    const drag = Math.exp(-1.45 * deltaSeconds);
 
     penguins.forEach((penguin) => {
       if (penguin.status !== "active") {
@@ -291,7 +391,7 @@ function initGame() {
 
       const speed = Math.hypot(penguin.velocityX, penguin.velocityY);
 
-      if (speed < 14) {
+      if (speed < 9) {
         penguin.velocityX = 0;
         penguin.velocityY = 0;
         penguin.moving = false;
@@ -316,9 +416,10 @@ function initGame() {
     const height = window.innerHeight;
 
     ctx.clearRect(0, 0, width, height);
-    const floeLayout = drawIceFloe(ctx, floeProfile, width, height);
+    const floeLayout = drawIceFloe(ctx, floeProfile, width, height, floeScale);
+    currentFloeLayout = floeLayout;
     currentFloePolygon = getFloePolygon(floeProfile, floeLayout);
-    currentPenguinSize = Math.round(floeLayout.baseSize * 0.2);
+    currentPenguinSize = getUnscaledPenguinSize(width, height);
     const hasSelection = joystick.hasSelection();
 
     if (playerPenguin.status === "active" && hasSelection && !gameOver) {
@@ -349,16 +450,17 @@ function initGame() {
   }
 
   strengthSlider.addEventListener("input", () => {
-    playerState.aimStrength = Number(strengthSlider.value) / 100;
     syncStrengthUi();
   });
 
   pushButton.addEventListener("click", startShot);
   tryAgainButton.addEventListener("click", resetGame);
+  playAgainButton.addEventListener("click", resetGame);
 
   onResize();
   syncStrengthUi();
   setGameOverOverlayVisible(false);
+  setYouWinOverlayVisible(false);
   resetGame();
   updatePushAvailability();
 
