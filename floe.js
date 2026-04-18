@@ -21,8 +21,7 @@ export function createFloeProfile(pointCount = 18) {
 
 export function getFloeLayout(width, height, scale = 1) {
   const minDimension = Math.min(width, height);
-  const normalizedScale = Math.max(scale, 0.2);
-  const baseSize = Math.max(140 * normalizedScale, Math.min(minDimension * 0.31, 330) * normalizedScale);
+  const baseSize = Math.max(140, Math.min(minDimension * 0.31, 330)) * scale;
 
   return {
     centerX: width * 0.5,
@@ -31,6 +30,13 @@ export function getFloeLayout(width, height, scale = 1) {
     radiusX: baseSize * 1.15,
     radiusY: baseSize * 0.95,
   };
+}
+
+export function getUnscaledPenguinSize(width, height) {
+  const minDimension = Math.min(width, height);
+  const unscaledBaseSize = Math.max(140, Math.min(minDimension * 0.31, 330));
+
+  return Math.round(unscaledBaseSize * 0.2);
 }
 
 function getFloePoint(layout, point) {

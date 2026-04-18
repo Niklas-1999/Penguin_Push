@@ -10,6 +10,8 @@ The current build focuses on a clean, responsive foundation:
 - A draggable joystick for desktop and mobile
 - A direction indicator that shows where the player is aiming
 - A strength slider and Push button for shot-based movement
+- Shared penguin physics with collisions and push interactions
+- Round-based floe shrinking with win/lose overlays
 
 ## Controls
 
@@ -22,19 +24,22 @@ The current build focuses on a clean, responsive foundation:
 
 - [index.html](index.html) - page shell and canvas mount point
 - [styles.css](styles.css) - background, layout, and joystick styling
-- [main.js](main.js) - game bootstrap and render loop
+- [main.js](main.js) - game bootstrap, UI wiring, and round orchestration
 - [canvas.js](canvas.js) - canvas resize handling
-- [floe.js](floe.js) - ice floe generation and geometry helpers
+- [floe.js](floe.js) - ice floe generation, geometry helpers, and sizing utilities
 - [joystick.js](joystick.js) - touch and pointer joystick input
 - [directionArrow.js](directionArrow.js) - direction arrow rendering
-- [playerPenguin.js](playerPenguin.js) - player penguin drawing
-- [aiPenguin1.js](aiPenguin1.js) - AI penguin drawing
-- [aiPenguin2.js](aiPenguin2.js) - AI penguin drawing
-- [aiPenguin3.js](aiPenguin3.js) - AI penguin drawing
+- [aiPenguin1.js](aiPenguin1.js) - AI 1 targeting script (player focus)
+- [aiPenguin2.js](aiPenguin2.js) - AI 2 targeting script (nearest penguin)
+- [aiPenguin3.js](aiPenguin3.js) - AI 3 targeting script (randomized center bias)
+- [ai/shotPlanner.js](ai/shotPlanner.js) - shared AI shot orchestration
+- [penguins/state.js](penguins/state.js) - penguin roster and state creation
+- [penguins/render.js](penguins/render.js) - penguin and splash rendering helpers
+- [penguins/physics.js](penguins/physics.js) - collisions, sliding, and fall detection
 
 ## Current Status
 
-This is an early prototype. The foundation is in place for movement, AI behavior, scoring, and UI overlays.
+The prototype now includes a full playable loop with simultaneous turns, simple AI shot logic, shared push physics, floe shrink rounds, and win/lose states.
 
 ## Repository
 
