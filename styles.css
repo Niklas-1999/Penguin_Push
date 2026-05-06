@@ -216,6 +216,7 @@ body {
 
 .game-over__panel {
   width: min(92vw, 360px);
+  max-height: calc(100vh - 48px);
   padding: 28px 24px 24px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 26px;
@@ -223,6 +224,8 @@ body {
   box-shadow: 0 28px 70px rgba(0, 8, 18, 0.45);
   color: #f7fffe;
   text-align: center;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .game-over__title {
@@ -271,6 +274,7 @@ body {
 
 .you-win__panel {
   width: min(92vw, 360px);
+  max-height: calc(100vh - 48px);
   padding: 28px 24px 24px;
   border: 1px solid rgba(215, 255, 222, 0.22);
   border-radius: 26px;
@@ -278,6 +282,8 @@ body {
   box-shadow: 0 28px 70px rgba(0, 16, 6, 0.45);
   color: #f5fff5;
   text-align: center;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .you-win__title {

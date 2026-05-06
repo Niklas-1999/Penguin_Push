@@ -273,7 +273,7 @@ function initGame() {
     drawIceFloe(ctx, floeProfile, width, height, floeScale);
 
     penguins.forEach((penguin) => {
-      drawPenguin(ctx, penguin, currentPenguinSize);
+      drawPenguin(ctx, penguin, currentPenguinSize, floeViewRotation);
     });
 
     if (hasSelection && playerPenguin.status === "active" && playerPenguin.position && !gameOver) {
