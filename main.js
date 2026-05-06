@@ -3,6 +3,7 @@ import {
   createFloeProfile,
   drawIceFloe,
   getCardinalSpawnPoints,
+  getFloeLayout,
   getFloePolygon,
   getUnscaledPenguinSize,
 } from "./floe.js";
@@ -16,6 +17,7 @@ import { stepPenguinPhysics } from "./penguins/physics.js";
 function initGame() {
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
+  canvas.style.touchAction = "none";
   const floeProfile = createFloeProfile();
   const joystick = createJoystick(document.getElementById("joystick"));
   const strengthSlider = document.getElementById("strengthSlider");
@@ -35,11 +37,79 @@ function initGame() {
   let gameOver = false;
   let gameWon = false;
   let floeScale = 1;
+  let floeViewRotation = 0;
   let shouldShrinkAfterRound = false;
   let currentFloePolygon = null;
   let currentFloeLayout = null;
   let currentPenguinSize = 0;
   const shrinkFactorPerRound = 0.92;
+  const rotationGesture = {
+    pointers: new Map(),
+    baseRotation: 0,
+    startAngle: 0,
+    rotating: false,
+  };
+
+  function getTouchAngle(firstPoint, secondPoint) {
+    return Math.atan2(secondPoint.y - firstPoint.y, secondPoint.x - firstPoint.x);
+  }
+
+  function updateRotationFromGesture() {
+    const touchPoints = Array.from(rotationGesture.pointers.values());
+
+    if (touchPoints.length < 2) {
+      return;
+    }
+
+    const currentAngle = getTouchAngle(touchPoints[0], touchPoints[1]);
+
+    if (!rotationGesture.rotating) {
+      rotationGesture.rotating = true;
+      rotationGesture.startAngle = currentAngle;
+      rotationGesture.baseRotation = floeViewRotation;
+      return;
+    }
+
+    floeViewRotation = rotationGesture.baseRotation + (currentAngle - rotationGesture.startAngle);
+  }
+
+  function handleCanvasPointerDown(event) {
+    if (event.pointerType !== "touch") {
+      return;
+    }
+
+    canvas.setPointerCapture(event.pointerId);
+    rotationGesture.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (rotationGesture.pointers.size === 2) {
+      rotationGesture.rotating = false;
+      updateRotationFromGesture();
+    }
+  }
+
+  function handleCanvasPointerMove(event) {
+    if (!rotationGesture.pointers.has(event.pointerId)) {
+      return;
+    }
+
+    rotationGesture.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (rotationGesture.pointers.size >= 2) {
+      updateRotationFromGesture();
+    }
+  }
+
+  function handleCanvasPointerUp(event) {
+    if (!rotationGesture.pointers.has(event.pointerId)) {
+      return;
+    }
+
+    rotationGesture.pointers.delete(event.pointerId);
+
+    if (rotationGesture.pointers.size < 2) {
+      rotationGesture.rotating = false;
+    }
+  }
 
   function setGameOverOverlayVisible(visible) {
     gameOverOverlay.hidden = !visible;
@@ -97,6 +167,9 @@ function initGame() {
     const width = window.innerWidth;
     const height = window.innerHeight;
     floeScale = 1;
+    floeViewRotation = 0;
+    rotationGesture.pointers.clear();
+    rotationGesture.rotating = false;
     shouldShrinkAfterRound = false;
     const floeLayout = drawIceFloe(ctx, floeProfile, width, height, floeScale);
     const penguinSize = getUnscaledPenguinSize(width, height);
@@ -170,7 +243,7 @@ function initGame() {
     const height = window.innerHeight;
 
     ctx.clearRect(0, 0, width, height);
-    const floeLayout = drawIceFloe(ctx, floeProfile, width, height, floeScale);
+    const floeLayout = getFloeLayout(width, height, floeScale);
     currentFloeLayout = floeLayout;
     currentFloePolygon = getFloePolygon(floeProfile, floeLayout);
     currentPenguinSize = getUnscaledPenguinSize(width, height);
@@ -192,6 +265,13 @@ function initGame() {
       handleRoundOutcome(outcome);
     }
 
+    ctx.save();
+    ctx.translate(floeLayout.centerX, floeLayout.centerY);
+    ctx.rotate(floeViewRotation);
+    ctx.translate(-floeLayout.centerX, -floeLayout.centerY);
+
+    drawIceFloe(ctx, floeProfile, width, height, floeScale);
+
     penguins.forEach((penguin) => {
       drawPenguin(ctx, penguin, currentPenguinSize);
     });
@@ -199,6 +279,8 @@ function initGame() {
     if (hasSelection && playerPenguin.status === "active" && playerPenguin.position && !gameOver) {
       drawDirectionArrow(ctx, playerPenguin.position, currentPenguinSize, playerPenguin.aimAngle);
     }
+
+    ctx.restore();
 
     updatePushAvailability();
   }
@@ -212,6 +294,11 @@ function initGame() {
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", onResize);
   }
+
+  canvas.addEventListener("pointerdown", handleCanvasPointerDown);
+  canvas.addEventListener("pointermove", handleCanvasPointerMove);
+  canvas.addEventListener("pointerup", handleCanvasPointerUp);
+  canvas.addEventListener("pointercancel", handleCanvasPointerUp);
 
   strengthSlider.addEventListener("input", () => {
     syncStrengthUi();
